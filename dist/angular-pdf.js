@@ -36,11 +36,17 @@
       },
       link: function(scope, element, attrs) {
         element.css('display', 'block');
-        var url = scope.pdfUrl;
+        var url = attrs.pdfUrl ? attrs.pdfUrl : scope.pdfUrl;
+        var topOffset = attrs.topOffset ? attrs.topOffset : scope.topOffset;
+        var bottomOffset = attrs.bottomOffset ? attrs.bottomOffset : scope.bottomOffset;
+        var offsetTop = isFinite(topOffset) ? parseInt(topOffset) : 0;
+        var offsetBottom = isFinite(bottomOffset) ? parseInt(bottomOffset) : 0;
         var httpHeaders = scope.httpHeaders;
         var pdfDoc = null;
         var pageToDisplay = isFinite(attrs.page) ? parseInt(attrs.page) : 1;
         var pageFit = attrs.scale === 'page-fit';
+        var pageFitW = attrs.scale === 'page-width';
+        var pageFitH = attrs.scale === 'page-height';
         var scale = attrs.scale > 0 ? attrs.scale : 1;
         var canvasid = attrs.canvasid || 'pdf-canvas';
         var canvas = document.getElementById(canvasid);
@@ -53,6 +59,7 @@
         windowEl.on('scroll', function() {
           scope.$apply(function() {
             scope.scroll = windowEl[0].scrollY;
+            scope.scroll = windowEl[0].scrollX;
           });
         });
 
@@ -62,20 +69,34 @@
         scope.renderPage = function(num) {
           if (renderTask) {
               renderTask._internalRenderTask.cancel();
-          }
+          };
 
           pdfDoc.getPage(num).then(function(page) {
-            var viewport;
-            var pageWidthScale;
             var renderContext;
+            var viewport = page.getViewport(1);
+            var clientRect = element[0].getBoundingClientRect();
+	    if (debug) console.log("Offset Top: "+offsetTop);
+	    if (debug) console.log("Offset Bottom: "+offsetBottom);
+	    var windowHeight = $window.innerHeight;
+	    if (debug) console.log("Window Height: "+windowHeight);
+	    var clientRectHeight = windowHeight - offsetTop - offsetBottom;
+	    if (debug) console.log("Computed Height: "+clientRectHeight);
+            var pageWidthScale = clientRect.width / viewport.width;
+	    if (debug) console.log("Page Width Scale: "+pageWidthScale);
+            var pageHeightScale = clientRectHeight / viewport.height;
+	    if (debug) console.log("Page Height Scale: "+pageHeightScale);
 
             if (pageFit) {
-              viewport = page.getViewport(1);
-              var clientRect = element[0].getBoundingClientRect();
-              pageWidthScale = clientRect.width / viewport.width;
+              scale = Math.min(pageWidthScale,pageHeightScale);
+            };
+            if (pageFitW) {
               scale = pageWidthScale;
-            }
+            };
+            if (pageFitH) {
+              scale = pageHeightScale;
+            };
             viewport = page.getViewport(scale);
+	    if (debug) console.log("Page Scale: "+scale);
 
             setCanvasDimensions(canvas, viewport.width, viewport.height);
 
@@ -88,7 +109,7 @@
             renderTask.promise.then(function() {
                 if (typeof scope.onPageRender === 'function') {
                     scope.onPageRender();
-                }
+                };
             }).catch(function (reason) {
                 console.log(reason);
             });
@@ -98,7 +119,7 @@
         scope.goPrevious = function() {
           if (scope.pageToDisplay <= 1) {
             return;
-          }
+          };
           scope.pageToDisplay = parseInt(scope.pageToDisplay) - 1;
           scope.pageNum = scope.pageToDisplay;
         };
@@ -106,7 +127,7 @@
         scope.goNext = function() {
           if (scope.pageToDisplay >= pdfDoc.numPages) {
             return;
-          }
+          };
           scope.pageToDisplay = parseInt(scope.pageToDisplay) + 1;
           scope.pageNum = scope.pageToDisplay;
         };
@@ -128,7 +149,7 @@
         scope.fit = function() {
           pageFit = true;
           scope.renderPage(scope.pageToDisplay);
-        }
+        };
 
         scope.changePage = function() {
           scope.renderPage(scope.pageToDisplay);
@@ -143,14 +164,14 @@
             canvas.setAttribute('class', 'rotate270');
           } else {
             canvas.setAttribute('class', 'rotate0');
-          }
+          };
         };
 
         function clearCanvas() {
           if (ctx) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-          }
-        }
+          };
+        };
 
         function renderPDF() {
           clearCanvas();
@@ -162,7 +183,7 @@
 
           if (httpHeaders) {
             params.httpHeaders = httpHeaders;
-          }
+          };
 
           if (url && url.length) {
             pdfLoaderTask = PDFJS.getDocument(params, null, null, scope.onProgress);
@@ -170,7 +191,7 @@
                 function(_pdfDoc) {
                   if (typeof scope.onLoad === 'function') {
                     scope.onLoad();
-                  }
+                  };
 
                   pdfDoc = _pdfDoc;
                   scope.renderPage(scope.pageToDisplay);
@@ -187,20 +208,20 @@
                 }
             );
           }
-        }
+        };
 
         scope.$watch('pageNum', function(newVal) {
           scope.pageToDisplay = parseInt(newVal);
           if (pdfDoc !== null) {
             scope.renderPage(scope.pageToDisplay);
-          }
+          };
         });
 
         scope.$watch('pdfUrl', function(newVal) {
           if (newVal !== '') {
             if (debug) {
               console.log('pdfUrl value change detected: ', scope.pdfUrl);
-            }
+            };
             url = newVal;
             scope.pageNum = scope.pageToDisplay = pageToDisplay;
             if (pdfLoaderTask) {
@@ -212,7 +233,6 @@
             }
           }
         });
-
       }
     };
   } ]);
