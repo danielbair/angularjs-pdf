@@ -141,59 +141,6 @@ var NgPdf = exports.NgPdf = ["$window", "$document", "$log", function NgPdf($win
       debug = attrs.hasOwnProperty('debug') ? attrs.debug : false;
 
       var ctx = canvas.getContext('2d');
-<<<<<<< HEAD
-      var dpr = window.devicePixelRatio || 1;
-      var bsr = ctx.webkitBackingStorePixelRatio ||
-        ctx.mozBackingStorePixelRatio ||
-        ctx.msBackingStorePixelRatio ||
-        ctx.oBackingStorePixelRatio ||
-        ctx.backingStorePixelRatio || 1;
-
-      return dpr / bsr;
-    };
-
-    var setCanvasDimensions = function(canvas, w, h) {
-      var ratio = backingScale(canvas);
-      canvas.width = Math.floor(w * ratio);
-      canvas.height = Math.floor(h * ratio);
-      canvas.style.width = Math.floor(w) + 'px';
-      canvas.style.height = Math.floor(h) + 'px';
-      canvas.getContext('2d').setTransform(ratio, 0, 0, ratio, 0, 0);
-      return canvas;
-    };
-    return {
-      restrict: 'E',
-      templateUrl: function(element, attr) {
-        return attr.templateUrl ? attr.templateUrl : 'partials/viewer.html';
-      },
-      link: function(scope, element, attrs) {
-        element.css('display', 'block');
-        var url = attrs.pdfUrl ? attrs.pdfUrl : scope.pdfUrl;
-        var topOffset = attrs.topOffset ? attrs.topOffset : scope.topOffset;
-        var bottomOffset = attrs.bottomOffset ? attrs.bottomOffset : scope.bottomOffset;
-        var offsetTop = isFinite(topOffset) ? parseInt(topOffset) : 0;
-        var offsetBottom = isFinite(bottomOffset) ? parseInt(bottomOffset) : 0;
-        var httpHeaders = scope.httpHeaders;
-        var pdfDoc = null;
-        var pageToDisplay = isFinite(attrs.page) ? parseInt(attrs.page) : 1;
-        var pageFit = attrs.scale === 'page-fit';
-        var pageFitW = attrs.scale === 'page-width';
-        var pageFitH = attrs.scale === 'page-height';
-        var scale = attrs.scale > 0 ? attrs.scale : 1;
-        var canvasid = attrs.canvasid || 'pdf-canvas';
-        var canvas = document.getElementById(canvasid);
-
-        debug = attrs.hasOwnProperty('debug') ? attrs.debug : false;
-        var creds = attrs.usecredentials;
-        var ctx = canvas.getContext('2d');
-        var windowEl = angular.element($window);
-
-        windowEl.on('scroll', function() {
-          scope.$apply(function() {
-            scope.scroll = windowEl[0].scrollY;
-            scope.scroll = windowEl[0].scrollX;
-          });
-=======
       var windowEl = angular.element($window);
 
       element.css('display', 'block');
@@ -201,62 +148,12 @@ var NgPdf = exports.NgPdf = ["$window", "$document", "$log", function NgPdf($win
       windowEl.on('scroll', function () {
         scope.$apply(function () {
           scope.scroll = windowEl[0].scrollY;
->>>>>>> sayanee/master
         });
       });
 
       PDFJS.disableWorker = true;
       scope.pageNum = pageToDisplay;
 
-<<<<<<< HEAD
-        scope.renderPage = function(num) {
-          if (renderTask) {
-              renderTask._internalRenderTask.cancel();
-          };
-
-          pdfDoc.getPage(num).then(function(page) {
-            var renderContext;
-            var viewport = page.getViewport(1);
-            var clientRect = element[0].getBoundingClientRect();
-	    if (debug) console.log("Offset Top: "+offsetTop);
-	    if (debug) console.log("Offset Bottom: "+offsetBottom);
-	    var windowHeight = $window.innerHeight;
-	    if (debug) console.log("Window Height: "+windowHeight);
-	    var clientRectHeight = windowHeight - offsetTop - offsetBottom;
-	    if (debug) console.log("Computed Height: "+clientRectHeight);
-            var pageWidthScale = clientRect.width / viewport.width;
-	    if (debug) console.log("Page Width Scale: "+pageWidthScale);
-            var pageHeightScale = clientRectHeight / viewport.height;
-	    if (debug) console.log("Page Height Scale: "+pageHeightScale);
-
-            if (pageFit) {
-              scale = Math.min(pageWidthScale,pageHeightScale);
-            };
-            if (pageFitW) {
-              scale = pageWidthScale;
-            };
-            if (pageFitH) {
-              scale = pageHeightScale;
-            };
-            viewport = page.getViewport(scale);
-	    if (debug) console.log("Page Scale: "+scale);
-
-            setCanvasDimensions(canvas, viewport.width, viewport.height);
-
-            renderContext = {
-              canvasContext: ctx,
-              viewport: viewport
-            };
-
-            renderTask = page.render(renderContext);
-            renderTask.promise.then(function() {
-                if (typeof scope.onPageRender === 'function') {
-                    scope.onPageRender();
-                };
-            }).catch(function (reason) {
-                console.log(reason);
-            });
-=======
       scope.renderPage = function (num) {
         if (renderTask) {
           renderTask._internalRenderTask.cancel();
@@ -292,28 +189,10 @@ var NgPdf = exports.NgPdf = ["$window", "$document", "$log", function NgPdf($win
             }
           }).catch(function (reason) {
             $log.log(reason);
->>>>>>> sayanee/master
           });
         });
       };
 
-<<<<<<< HEAD
-        scope.goPrevious = function() {
-          if (scope.pageToDisplay <= 1) {
-            return;
-          };
-          scope.pageToDisplay = parseInt(scope.pageToDisplay) - 1;
-          scope.pageNum = scope.pageToDisplay;
-        };
-
-        scope.goNext = function() {
-          if (scope.pageToDisplay >= pdfDoc.numPages) {
-            return;
-          };
-          scope.pageToDisplay = parseInt(scope.pageToDisplay) + 1;
-          scope.pageNum = scope.pageToDisplay;
-        };
-=======
       scope.goPrevious = function () {
         if (scope.pageToDisplay <= 1) {
           return;
@@ -329,7 +208,6 @@ var NgPdf = exports.NgPdf = ["$window", "$document", "$log", function NgPdf($win
         scope.pageToDisplay = parseInt(scope.pageToDisplay) + 1;
         scope.pageNum = scope.pageToDisplay;
       };
->>>>>>> sayanee/master
 
       scope.zoomIn = function () {
         pageFit = false;
@@ -345,12 +223,6 @@ var NgPdf = exports.NgPdf = ["$window", "$document", "$log", function NgPdf($win
         return scale;
       };
 
-<<<<<<< HEAD
-        scope.fit = function() {
-          pageFit = true;
-          scope.renderPage(scope.pageToDisplay);
-        };
-=======
       scope.fit = function () {
         pageFit = true;
         scope.renderPage(scope.pageToDisplay);
@@ -371,7 +243,6 @@ var NgPdf = exports.NgPdf = ["$window", "$document", "$log", function NgPdf($win
           canvas.setAttribute('class', 'rotate0');
         }
       };
->>>>>>> sayanee/master
 
       function clearCanvas() {
         if (ctx) {
@@ -379,25 +250,6 @@ var NgPdf = exports.NgPdf = ["$window", "$document", "$log", function NgPdf($win
         }
       }
 
-<<<<<<< HEAD
-        scope.rotate = function() {
-          if (canvas.getAttribute('class') === 'rotate0') {
-            canvas.setAttribute('class', 'rotate90');
-          } else if (canvas.getAttribute('class') === 'rotate90') {
-            canvas.setAttribute('class', 'rotate180');
-          } else if (canvas.getAttribute('class') === 'rotate180') {
-            canvas.setAttribute('class', 'rotate270');
-          } else {
-            canvas.setAttribute('class', 'rotate0');
-          };
-        };
-
-        function clearCanvas() {
-          if (ctx) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-          };
-        };
-=======
       function renderPDF() {
         clearCanvas();
 
@@ -409,7 +261,6 @@ var NgPdf = exports.NgPdf = ["$window", "$document", "$log", function NgPdf($win
         if (httpHeaders) {
           params.httpHeaders = httpHeaders;
         }
->>>>>>> sayanee/master
 
         if (url && url.length) {
           pdfLoaderTask = PDFJS.getDocument(params);
@@ -423,64 +274,6 @@ var NgPdf = exports.NgPdf = ["$window", "$document", "$log", function NgPdf($win
             pdfDoc = _pdfDoc;
             scope.renderPage(scope.pageToDisplay);
 
-<<<<<<< HEAD
-          if (httpHeaders) {
-            params.httpHeaders = httpHeaders;
-          };
-
-          if (url && url.length) {
-            pdfLoaderTask = PDFJS.getDocument(params, null, null, scope.onProgress);
-            pdfLoaderTask.then(
-                function(_pdfDoc) {
-                  if (typeof scope.onLoad === 'function') {
-                    scope.onLoad();
-                  };
-
-                  pdfDoc = _pdfDoc;
-                  scope.renderPage(scope.pageToDisplay);
-
-                  scope.$apply(function() {
-                    scope.pageCount = _pdfDoc.numPages;
-                  });
-                }, function(error) {
-                  if (error) {
-                    if (typeof scope.onError === 'function') {
-                      scope.onError(error);
-                    }
-                  }
-                }
-            );
-          }
-        };
-
-        scope.$watch('pageNum', function(newVal) {
-          scope.pageToDisplay = parseInt(newVal);
-          if (pdfDoc !== null) {
-            scope.renderPage(scope.pageToDisplay);
-          };
-        });
-
-        scope.$watch('pdfUrl', function(newVal) {
-          if (newVal !== '') {
-            if (debug) {
-              console.log('pdfUrl value change detected: ', scope.pdfUrl);
-            };
-            url = newVal;
-            scope.pageNum = scope.pageToDisplay = pageToDisplay;
-            if (pdfLoaderTask) {
-                pdfLoaderTask.destroy().then(function () {
-                    renderPDF();
-                });
-            } else {
-                renderPDF();
-            }
-          }
-        });
-      }
-    };
-  } ]);
-})();
-=======
             scope.$apply(function () {
               scope.pageCount = _pdfDoc.numPages;
             });
@@ -558,4 +351,3 @@ module.exports = __WEBPACK_EXTERNAL_MODULE_0__;
 /******/ });
 });
 //# sourceMappingURL=angular-pdf.js.map
->>>>>>> sayanee/master
