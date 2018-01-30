@@ -22,11 +22,6 @@ export const NgPdf = ($window, $document, $log) => {
     canvas.getContext('2d').setTransform(ratio, 0, 0, ratio, 0, 0);
     return canvas;
   };
-  
-  const initCanvas = (element, canvas) => {
-    angular.element(canvas).addClass('rotate0');
-    element.append(canvas);
-  };
 
   return {
     restrict: 'E',
@@ -34,20 +29,25 @@ export const NgPdf = ($window, $document, $log) => {
       return attr.templateUrl ? attr.templateUrl : 'partials/viewer.html';
     },
     link(scope, element, attrs) {
+      let pdfDoc = null;
       let renderTask = null;
       let pdfLoaderTask = null;
-      let debug = false;
-      let url = scope.pdfUrl;
       let httpHeaders = scope.httpHeaders;
-      let pdfDoc = null;
+      let debug = attrs.hasOwnProperty('debug') ? attrs.debug : false;
+      let url = attrs.pdfUrl ? attrs.pdfUrl : scope.pdfUrl;
+      let topOffset = attrs.topOffset ? attrs.topOffset : scope.topOffset;
+      let bottomOffset = attrs.bottomOffset ? attrs.bottomOffset : scope.bottomOffset;
+      let offsetTop = isFinite(topOffset) ? parseInt(topOffset) : 0;
+      let offsetBottom = isFinite(bottomOffset) ? parseInt(bottomOffset) : 0;
       let pageToDisplay = isFinite(attrs.page) ? parseInt(attrs.page) : 1;
       let pageFit = attrs.scale === 'page-fit';
-      let limitHeight = attrs.limitcanvasheight === '1';
+      let pageFitF = attrs.scale === 'page-fit-full';
+      let pageFitW = attrs.scale === 'page-fit-width';
+      let pageFitH = attrs.scale === 'page-fit-height';
       let scale = attrs.scale > 0 ? attrs.scale : 1;
-      let canvas = $document[0].createElement('canvas');
-      initCanvas(element, canvas);
+      let canvasid = attrs.canvasid || 'pdf-canvas';
+      let canvas = $document[0].getElementById(canvasid);
       let creds = attrs.usecredentials;
-      debug = attrs.hasOwnProperty('debug') ? attrs.debug : false;
 
       let ctx = canvas.getContext('2d');
       let windowEl = angular.element($window);
@@ -73,16 +73,30 @@ export const NgPdf = ($window, $document, $log) => {
           let pageWidthScale;
           let renderContext;
 
-          if (pageFit) {
-            viewport = page.getViewport(1);
-            const clientRect = element[0].getBoundingClientRect();
-            pageWidthScale = clientRect.width / viewport.width;
-            if (limitHeight) {
-              pageWidthScale = Math.min(pageWidthScale, clientRect.height / viewport.height);
-            }
-            scale = pageWidthScale;
-          }
+          let viewport = page.getViewport(1);
+          let clientRect = element[0].getBoundingClientRect();
+	  if (debug) console.log("Offset Top: "+offsetTop);
+	  if (debug) console.log("Offset Bottom: "+offsetBottom);
+	  let windowHeight = $window.innerHeight;
+	  if (debug) console.log("Window Height: "+windowHeight);
+	  let clientRectHeight = windowHeight - offsetTop - offsetBottom;
+	  if (debug) console.log("Computed Height: "+clientRectHeight);
+          let pageWidthScale = clientRect.width / viewport.width;
+	  if (debug) console.log("Page Width Scale: "+pageWidthScale);
+          let pageHeightScale = clientRectHeight / viewport.height;
+	  if (debug) console.log("Page Height Scale: "+pageHeightScale);
+
+          if (pageFit || pageFitF) {
+              scale = Math.min(pageWidthScale,pageHeightScale);
+          };
+          if (pageFitW) {
+              scale = pageWidthScale;
+          };
+          if (pageFitH) {
+              scale = pageHeightScale;
+          };
           viewport = page.getViewport(scale);
+	  if (debug) console.log("Page Scale: "+scale);
 
           setCanvasDimensions(canvas, viewport.width, viewport.height);
 
