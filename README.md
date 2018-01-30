@@ -1,6 +1,4 @@
-# angular-pdf [![Build Status](https://travis-ci.org/sayanee/angularjs-pdf.svg)](https://travis-ci.org/sayanee/angularjs-pdf) [![Dependency Status](https://gemnasium.com/sayanee/angularjs-pdf.svg)](https://gemnasium.com/sayanee/angularjs-pdf)
-
-Version: 1.3.0
+# angular-pdf [![Build Status](https://travis-ci.org/sayanee/angularjs-pdf.svg)](https://travis-ci.org/sayanee/angularjs-pdf) [![Dependency Status](https://gemnasium.com/sayanee/angularjs-pdf.svg)](https://gemnasium.com/sayanee/angularjs-pdf) [![codecov](https://codecov.io/gh/sayanee/angularjs-pdf/branch/master/graph/badge.svg)](https://codecov.io/gh/sayanee/angularjs-pdf)
 
 >An [AngularJS](http://angularjs.org/) [directive](http://docs.angularjs.org/guide/directive) `ng-pdf` to display PDF files with [PDFJS](http://mozilla.github.io/pdf.js/).
 
@@ -12,7 +10,7 @@ Integrate PDF files right into web pages.
 
 ## Requirements
 
-Check [`bower.json` file](https://github.com/sayanee/angularjs-pdf/blob/master/bower.json) for dependencies and their versions:
+Check [`package.json` file](https://github.com/sayanee/angularjs-pdf/blob/master/package.json) for dependencies and their versions:
 
 1. [AngularJS](http://angularjs.org/) - get the latest [angular.min.js](https://developers.google.com/speed/libraries/devguide#angularjs)
 - [PDFJS](http://mozilla.github.io/pdf.js/) - build the files [`pdf.js` and `pdf.worker.js`](https://github.com/mozilla/pdf.js#building-pdfjs)
@@ -30,6 +28,7 @@ Check [`bower.json` file](https://github.com/sayanee/angularjs-pdf/blob/master/b
 - handles error
 - show loading of pdf
 - show progress percentage of loading pdf
+- insert password for protected PDFs
 - dynamically change the pdf url
 - support retina canvas
 - set authorization or http headers
@@ -39,7 +38,11 @@ Check [`bower.json` file](https://github.com/sayanee/angularjs-pdf/blob/master/b
 1. Install or copy over the file `dist/angular-pdf.min.js` or `dist/angular-pdf.js`
 
     ```shell
-    bower install angular-pdf
+    npm install angular-pdf --save
+    ```
+    or
+    ```shell
+    bower install angular-pdf --save
     ```
 - Include the path to the directive file in `index.html`
 
@@ -73,11 +76,6 @@ Check [`bower.json` file](https://github.com/sayanee/angularjs-pdf/blob/master/b
 
       ```html
       <ng-pdf template-url="/partials/viewer.html" page=12></ng-pdf>
-      ```
-    - `canvasid` as an option for `id` of the canvas (default for `canvasid` is `pdf-canvas`)
-
-      ```html
-      <ng-pdf template-url="/partials/viewer.html" canvasid="mycanvas"></ng-pdf>
       ```
     - `usecredentials` as an option to add credentials / authorization
 
@@ -207,6 +205,19 @@ $scope.onProgress = function(progress) {
 }
 ```
 
+### Managing password requests
+
+In the controller, you can use the function `scope.onPassword`. This function is called when the PDF require an opening password.
+
+```js
+$scope.onPassword = function (updatePasswordFn, passwordResponse) {
+  // if passwordResponse === PDFJS.PasswordResponses.NEED_PASSWORD
+  // you can provide the password calling updatePasswordFn('THE_PASSWORD')
+  // else if passwordResponse === PDFJS.PasswordResponses.INCORRECT_PASSWORD
+  // provided password is not correct
+};
+```
+
 ## Variations
 
 1. If using with [Angular UI modal](http://angular-ui.github.io/bootstrap/#/modal), `pageNum` attribute is no longer required. [Checkout the implementation](https://github.com/sayanee/angularjs-pdf/issues/12)
@@ -236,17 +247,17 @@ This repository follows the [Semantic Versioning](http://semver.org/) guidelines
 1. For **patches**, run the command:
 
 	```
-	grunt bump
+	npm run release patch
 	```
 - For **minor release**, run the command:
 
 	```
-	grunt bump:minor
+	npm run release minor
 	```
 - For **major release**, run the command:
 
 	```
-	grunt bump:major
+	npm run release major
 	```
 
 ## License
